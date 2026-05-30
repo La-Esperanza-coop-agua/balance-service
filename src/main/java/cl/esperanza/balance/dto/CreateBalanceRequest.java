@@ -1,11 +1,11 @@
 package cl.esperanza.balance.dto;
 
+import cl.esperanza.balance.model.Balance;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
-import cl.esperanza.balance.model.Balance;
 
 public record CreateBalanceRequest(
-    @NotBlank(message = "El periodo no puede estar vacío (Ej: 2026-05)")
+    @NotBlank(message = "El periodo no puede estar vacío")
     String periodo,
 
     @PositiveOrZero(message = "El agua producida no puede ser negativa")

@@ -3,9 +3,11 @@ package cl.esperanza.balance.service;
 import org.springframework.stereotype.Service;
 import cl.esperanza.balance.model.Balance;
 import cl.esperanza.balance.repository.BalanceRepository;
+import jakarta.transaction.Transactional;
 import cl.esperanza.balance.exception.ResourceNotFoundException;
 
 @Service
+@Transactional
 public class BalanceService {
 
     private final BalanceRepository balanceRepo;
