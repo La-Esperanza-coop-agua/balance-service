@@ -1,10 +1,13 @@
 package cl.esperanza.balance.service;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
+
 import cl.esperanza.balance.model.Balance;
 import cl.esperanza.balance.repository.BalanceRepository;
 import jakarta.transaction.Transactional;
-import cl.esperanza.balance.exception.ResourceNotFoundException;
 
 @Service
 @Transactional
@@ -42,8 +45,7 @@ public class BalanceService {
         return balanceRepo.save(balance);
     }
 
-    public Balance obtenerPorPeriodo(String periodo) {
-        return balanceRepo.findByPeriodo(periodo)
-            .orElseThrow(() -> new ResourceNotFoundException("No se encontró balance para el periodo: " + periodo));
+    public List<Balance> obtenerPorPeriodo(LocalDate periodo){
+        return balanceRepo.findByPeriodo(periodo);
     }
 }
