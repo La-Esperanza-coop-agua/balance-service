@@ -24,7 +24,6 @@ import cl.esperanza.balance.model.Balance;
 import cl.esperanza.balance.service.BalanceService;
 import jakarta.validation.Valid;
 
-
 @RestController
 @RequestMapping("/api/v1/balance")
 public class BalanceController {
@@ -47,37 +46,62 @@ public class BalanceController {
 
     @GetMapping("/verificar-fugas")
     public ResponseEntity<BalanceResponse> verificarFugas(@RequestParam String periodo) {
-        TelemetriaDTO[] telemetrias = null;
+        
+        TelemetriaDTO[] listaTelemetria = null;
         try {
-            telemetrias = telemetriaWebClient.get()
+            listaTelemetria = telemetriaWebClient.get()
                 .uri("/mes/{periodo}", periodo)
                 .retrieve()
                 .bodyToMono(TelemetriaDTO[].class)
-                .block();   
+                .block(); 
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new BalanceResponse(0, false, "Error: El microservicio de Telemetría no responde o la ruta no existe."));
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(new BalanceResponse(0, false, "Error: Telemetría apagada."));
         }
 
-        FacturaDTO[] facturas = null;
+        FacturaDTO[] listaFacturas = null;
         try {
-            facturas = facturaWebClient.get()
+            listaFacturas = facturaWebClient.get()
                     .uri("/periodo/{periodo}", periodo) 
                     .retrieve()
                     .bodyToMono(FacturaDTO[].class)
                     .block();
         } catch (Exception e) {
-             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new BalanceResponse(0, false, "Error: El microservicio de Facturación no responde o la ruta no existe."));
+             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                 .body(new BalanceResponse(0, false, "Error: Facturación apagada."));
         }
-        /* 
-        double totalAguaExtraida = 0;
-        if (telemetrias != null) {
-            for (TelemetriaDTO t : telemetrias) {
-                totalAguaExtraida += t.getNivelEstanque(); 
+        
+        double totalExtraido = 0;
+        if (listaTelemetria != null) {
+            for (TelemetriaDTO telemetria : listaTelemetria) {
+                totalExtraido = totalExtraido + telemetria.getNivelEstanque(); 
             }
         }
-        */
-    }
-    
+        
+        double totalFacturado = 0;
+        if (listaFacturas != null) {
+            for (FacturaDTO factura : listaFacturas) {
+                totalFacturado = totalFacturado + factura.getMetrosCubicosFacturados();
+            }
+        }
+
+        double porcentajePerdida = 0;
+        boolean alerta = false;
+        String mensaje = "No hay datos de extracción para este periodo.";
+
+        if (totalExtraido > 0) {
+            double aguaPerdida = totalExtraido - totalFacturado;
+            porcentajePerdida = (aguaPerdida / totalExtraido) * 100.0;
+            if (porcentajePerdida > 25.0) {
+                alerta = true;
+                mensaje = "¡ALERTA! Las pérdidas de agua superan el 25%. Posible tubería rota.";
+            } else {
+                alerta = false;
+                mensaje = "Todo en orden. Las pérdidas de agua están dentro de lo normal.";
+            }
+        }
+
+        // // No logre ver como se podria hacer aca, hay que preguntar como se haria la operacion aqui
 
     @PostMapping("/generar")
     public ResponseEntity<Balance> generarNuevoBalance(@Valid @RequestBody CreateBalanceRequest request) {
