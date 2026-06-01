@@ -45,12 +45,13 @@ public class BalanceController {
     }
 
     @GetMapping("/verificar-fugas")
-    public ResponseEntity<BalanceResponse> verificarFugas(@RequestParam String periodo) {
-        
+    public ResponseEntity<BalanceResponse> verificarFugas(@RequestParam  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate periodo) {
+        String periodoTexto = periodo.toString(); // es necesario pasar el LocalDate a String para que funcione con WebClient
+
         TelemetriaDTO[] listaTelemetria = null;
         try {
             listaTelemetria = telemetriaWebClient.get()
-                .uri("/mes/{periodo}", periodo)
+                .uri("/mes/{periodo}", periodoTexto)
                 .retrieve()
                 .bodyToMono(TelemetriaDTO[].class)
                 .block(); 
@@ -62,7 +63,7 @@ public class BalanceController {
         FacturaDTO[] listaFacturas = null;
         try {
             listaFacturas = facturaWebClient.get()
-                    .uri("/periodo/{periodo}", periodo) 
+                    .uri("/periodo/{periodo}", periodoTexto) 
                     .retrieve()
                     .bodyToMono(FacturaDTO[].class)
                     .block();
@@ -101,7 +102,9 @@ public class BalanceController {
             }
         }
 
-        // // No logre ver como se podria hacer aca, hay que preguntar como se haria la operacion aqui
+        return ResponseEntity.ok(new BalanceResponse(porcentajePerdida, alerta, mensaje));
+    }
+        
 
     @PostMapping("/generar")
     public ResponseEntity<Balance> generarNuevoBalance(@Valid @RequestBody CreateBalanceRequest request) {
