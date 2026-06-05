@@ -15,4 +15,9 @@ public class WebClientConfig {
     public WebClient facturacionWebClient(WebClient.Builder builder){
         return builder.baseUrl("http://localhost:8083/api/v1/facturacion").build();
     }
+    
+    @Bean
+    public WebClient incidenciasWebClient(WebClient.Builder builder){
+        return builder.baseUrl("http://localhost:8082/api/v1/incidencias").build();
+    }
 }
