@@ -18,7 +18,7 @@ import cl.esperanza.balance.model.Balance;
 import cl.esperanza.balance.service.BalanceService;
 
 @RestController
-@RequestMapping("/api/v1/balance")
+@RequestMapping("/api/v1/balances")
 public class BalanceController {
     
     private final BalanceService balanceService;
@@ -35,7 +35,7 @@ public class BalanceController {
     }
 
     // EndPoint 2 obtiene balances por periodo 
-    @GetMapping("/{periodo}")
+    @GetMapping("/historial/{periodo}")
     public ResponseEntity<List<Balance>> obtenerPorPeriodo(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate periodo) {
         List<Balance> balances = balanceService.obtenerPorPeriodo(periodo);
         

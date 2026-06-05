@@ -7,17 +7,17 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class WebClientConfig {
     @Bean
-    public WebClient telemetriaWebClient(WebClient.Builder builder){
-        return builder.baseUrl("http://localhost:8086/api/v1/telemetria").build();
+    public WebClient telemetriaWebClient(){
+        return WebClient.builder().baseUrl("http://localhost:8086/api/v1/telemetria").build();
     }
 
     @Bean
-    public WebClient facturacionWebClient(WebClient.Builder builder){
-        return builder.baseUrl("http://localhost:8083/api/v1/facturacion").build();
+    public WebClient facturacionWebClient(){
+        return WebClient.builder().baseUrl("http://localhost:8083/api/v1/facturacion").build();
     }
     
     @Bean
-    public WebClient incidenciasWebClient(WebClient.Builder builder){
-        return builder.baseUrl("http://localhost:8082/api/v1/incidencias").build();
+    public WebClient incidenciasWebClient(){
+        return WebClient.builder().baseUrl("http://localhost:8082/api/v1/incidencias").build();
     }
 }

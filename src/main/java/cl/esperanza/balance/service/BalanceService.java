@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import cl.esperanza.balance.dto.BalanceResponse;
-import cl.esperanza.balance.dto.FacturaDTO;
 import cl.esperanza.balance.dto.TelemetriaDTO;
 import cl.esperanza.balance.model.Balance;
 import cl.esperanza.balance.repository.BalanceRepository;
@@ -22,13 +21,11 @@ public class BalanceService {
     @Autowired
     private BalanceRepository balanceRepo;
 
-    private final WebClient telemetriaWebClient;
-    private final WebClient facturaWebClient;
+    @Autowired
+    private WebClient telemetriaWebClient;
 
-    public BalanceService(WebClient telemetriaWebClient, WebClient facturaWebClient) {
-        this.telemetriaWebClient = telemetriaWebClient;
-        this.facturaWebClient = facturaWebClient;
-    }
+    @Autowired
+    private WebClient facturacionWebClient;
 
     public List<Balance> obtenerPorPeriodo(LocalDate periodo) {
         return balanceRepo.findByPeriodo(periodo);
@@ -69,7 +66,7 @@ public class BalanceService {
     private double obtenerTotalExtraido(String periodoStr) {
         try {
             TelemetriaDTO[] telemetrias = telemetriaWebClient.get()
-                .uri("/mes/" + periodoStr)
+                .uri("http://localhost:8086/api/v1/telemetria/fecha/" + periodoStr) // Ruta real de tu TelemetriaController
                 .retrieve()
                 .bodyToMono(TelemetriaDTO[].class)
                 .block();
@@ -77,21 +74,23 @@ public class BalanceService {
             if (telemetrias == null) return 0.0;
             return Arrays.stream(telemetrias).mapToDouble(TelemetriaDTO::getNivelEstanque).sum();
         } catch (Exception e) {
+            System.err.println("Error consultando Telemetría: " + e.getMessage());
             return 0.0; 
         }
     }
 
     private double obtenerTotalFacturado(String periodoStr) {
         try {
-            FacturaDTO[] facturas = facturaWebClient.get()
-                .uri("/periodo/" + periodoStr)
+            // ¡AHORA ES MUCHO MÁS SIMPLE! Solo recibimos un número.
+            Double totalFacturado = facturacionWebClient.get()
+                .uri("/api/v1/facturacion/periodo/" + periodoStr + "/total-consumo") // La nueva ruta que acabamos de crear
                 .retrieve()
-                .bodyToMono(FacturaDTO[].class)
+                .bodyToMono(Double.class)
                 .block();
 
-            if (facturas == null) return 0.0;
-            return Arrays.stream(facturas).mapToDouble(FacturaDTO::getMetrosCubicosFacturados).sum();
+            return totalFacturado != null ? totalFacturado : 0.0;
         } catch (Exception e) {
+            System.err.println("Error consultando Facturación: " + e.getMessage());
             return 0.0;
         }
     }
