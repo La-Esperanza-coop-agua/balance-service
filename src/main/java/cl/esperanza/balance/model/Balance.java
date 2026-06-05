@@ -22,7 +22,7 @@ public class Balance {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idBalance;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private LocalDate periodo; 
 
     @Column(nullable = false)
