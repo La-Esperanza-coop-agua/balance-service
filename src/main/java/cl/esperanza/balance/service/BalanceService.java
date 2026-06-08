@@ -42,6 +42,7 @@ public class BalanceService {
 
         double aguaConsumida = obtenerTotalFacturado(periodoStr);
 
+        // Evitar división por cero y calcular pérdida y porcentaje de manera segura
         double perdida = Math.max(0, aguaProducida - aguaConsumida);
         double porcentaje = (perdida / aguaProducida) * 100.0;
         porcentaje = Math.round(porcentaje * 100.0) / 100.0;
