@@ -1,0 +1,21 @@
+# Compilación local de Maven
+target/
+*.jar
+*.war
+
+# Entorno de Desarrollo
+.vscode/
+.idea/
+*.iml
+
+# Seguridad
+.env
+application-secrets.properties
+
+# Control de Versiones
+.git/
+.gitignore
+
+# Archivos de Sistema Operativo
+Thumbs.db
+.DS_Store
