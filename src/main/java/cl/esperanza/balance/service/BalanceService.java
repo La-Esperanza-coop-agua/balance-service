@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -18,14 +17,17 @@ import jakarta.transaction.Transactional;
 @Transactional
 public class BalanceService {
     
-    @Autowired
-    private BalanceRepository balanceRepo;
+    private final BalanceRepository balanceRepo;
+    private final WebClient telemetriaWebClient;
+    private final WebClient facturacionWebClient;
 
-    @Autowired
-    private WebClient telemetriaWebClient;
-
-    @Autowired
-    private WebClient facturacionWebClient;
+    public BalanceService(BalanceRepository balanceRepo, 
+                            WebClient telemetriaWebClient, 
+                            WebClient facturacionWebClient) {
+        this.balanceRepo = balanceRepo;
+        this.telemetriaWebClient = telemetriaWebClient;
+        this.facturacionWebClient = facturacionWebClient;
+    }
 
     public List<Balance> obtenerPorPeriodo(LocalDate periodo) {
         return balanceRepo.findByPeriodo(periodo);
@@ -42,7 +44,6 @@ public class BalanceService {
 
         double aguaConsumida = obtenerTotalFacturado(periodoStr);
 
-        // Evitar división por cero y calcular pérdida y porcentaje de manera segura
         double perdida = Math.max(0, aguaProducida - aguaConsumida);
         double porcentaje = (perdida / aguaProducida) * 100.0;
         porcentaje = Math.round(porcentaje * 100.0) / 100.0;
@@ -67,7 +68,7 @@ public class BalanceService {
     private double obtenerTotalExtraido(String periodoStr) {
         try {
             TelemetriaDTO[] telemetrias = telemetriaWebClient.get()
-                .uri("http://localhost:8086/api/v1/telemetria/fecha/" + periodoStr) // Ruta real de tu TelemetriaController
+                .uri("/fecha/" + periodoStr) 
                 .retrieve()
                 .bodyToMono(TelemetriaDTO[].class)
                 .block();
@@ -82,9 +83,8 @@ public class BalanceService {
 
     private double obtenerTotalFacturado(String periodoStr) {
         try {
-            // ¡AHORA ES MUCHO MÁS SIMPLE! Solo recibimos un número.
             Double totalFacturado = facturacionWebClient.get()
-                .uri("/api/v1/facturacion/periodo/" + periodoStr + "/total-consumo") // La nueva ruta que acabamos de crear
+                .uri("/periodo/" + periodoStr + "/total-consumo") 
                 .retrieve()
                 .bodyToMono(Double.class)
                 .block();
